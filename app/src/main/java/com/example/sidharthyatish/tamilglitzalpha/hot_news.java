@@ -34,14 +34,14 @@ public class hot_news extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
-        View v=inflater.inflate(R.layout.fragment_home,container,false);
-        return v;
+        return inflater.inflate(R.layout.fragment_hot_news,container,false);
+
 
     }
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        recyclerView = (RecyclerView) getView().findViewById(R.id.recyclerView);
+        recyclerView = (RecyclerView) getActivity().findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager llm=new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
