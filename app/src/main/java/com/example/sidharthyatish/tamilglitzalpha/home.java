@@ -1,6 +1,5 @@
 package com.example.sidharthyatish.tamilglitzalpha;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -31,9 +30,10 @@ public class home extends Fragment{
     private RecyclerView.Adapter adapter;
     private List<Article> listArticles;
     private ProgressBar progressBar;
+    LinearLayoutManager llm;
     private int visibleThreshold = 5;
     private int previousTotal=0;
-    private int page;
+    private int page=1;
     private boolean loading = true;
     int firstVisibleItem, visibleItemCount, totalItemCount;
     @Nullable
@@ -41,7 +41,7 @@ public class home extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
-        return inflater.inflate(R.layout.fragment_home,container,false);
+        return inflater.inflate(R.layout.fragment_hot_news,container,false);
 
 
     }
@@ -50,27 +50,55 @@ public class home extends Fragment{
         super.onActivityCreated(savedInstanceState);
         recyclerView = (RecyclerView) getActivity().findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        LinearLayoutManager llm=new LinearLayoutManager(getActivity());
+        llm=new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
 
         recyclerView.setLayoutManager(llm);
         listArticles=new ArrayList<>();
-        getData();
+        getData(page);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                visibleItemCount = recyclerView.getChildCount();
+                totalItemCount = llm.getItemCount();
+                firstVisibleItem = llm.findFirstVisibleItemPosition();
+
+                if (loading) {
+                    if (totalItemCount > previousTotal) {
+                        loading = false;
+                        previousTotal = totalItemCount;
+                    }
+                }
+                if (!loading && (totalItemCount - visibleItemCount)
+                        <= (firstVisibleItem + visibleThreshold)) {
+                    // End has been reached
+
+                    // Do something
+                    page++;
+
+                    getData(page);
+
+                    loading = true;
+                }
+
+            }
+        });
         adapter=new CardAdapter(listArticles,getContext());
         recyclerView.setAdapter(adapter);
 
     }
-    private void getData(){
+    private void getData(int page){
         //Showing a progress dialog
-        final ProgressDialog loading = ProgressDialog.show(getActivity(),"Loading Data", "Please wait...",false,false);
-        String url="https://tamilglitz.in/api/get_category_posts/?id=1";
+       // final ProgressDialog loading = ProgressDialog.show(getActivity(),"Loading Data", "Please wait...",false,false);
+        String url="https://tamilglitz.in/api/get_recent_posts/?count=5&page=";
         //Creating a json array request
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url,null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url+String.valueOf(page),null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         //Dismissing progress dialog
-                        loading.dismiss();
+                      //  loading.dismiss();
 
                         try {
                             JSONArray post = response.getJSONArray("posts");
