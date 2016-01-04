@@ -6,7 +6,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -62,18 +61,18 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // The action bar home/up action should open or close the drawer.
-        switch (item.getItemId()) {
-            case android.R.id.home:
-               drawerLayout.openDrawer(GravityCompat.START);
-                return true;
-        }
+    /*  @Override
+      public boolean onOptionsItemSelected(MenuItem item) {
+          // The action bar home/up action should open or close the drawer.
+          switch (item.getItemId()) {
+              case android.R.id.home:
+                 drawerLayout.openDrawer(GravityCompat.START);
+                  return true;
+          }
 
-        return super.onOptionsItemSelected(item);
-    }
-
+          return super.onOptionsItemSelected(item);
+      }
+  */
     // Make sure this is the method with just `Bundle` as the signature
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
