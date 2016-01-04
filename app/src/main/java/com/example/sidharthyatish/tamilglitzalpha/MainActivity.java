@@ -132,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager.beginTransaction().replace(R.id.frame, fragment).commit();
         // Initializing Drawer Layout and ActionBarToggle
 
-
         // Highlight the selected item, update the title, and close the drawer
         menuItem.setChecked(true);
         setTitle(menuItem.getTitle());

@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.android.volley.RequestQueue;
@@ -30,12 +31,15 @@ public class home extends Fragment{
     private RecyclerView.Adapter adapter;
     private List<Article> listArticles;
     private ProgressBar progressBar;
+    public static LinearLayout progressLayout;
     LinearLayoutManager llm;
-    private int visibleThreshold = 5;
+    private int visibleThreshold = 4;
     private int previousTotal=0;
     private int page=1;
+
     private boolean loading = true;
     int firstVisibleItem, visibleItemCount, totalItemCount;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,40 +54,41 @@ public class home extends Fragment{
         super.onActivityCreated(savedInstanceState);
         recyclerView = (RecyclerView) getActivity().findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        llm=new LinearLayoutManager(getActivity());
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
 
-        recyclerView.setLayoutManager(llm);
-        listArticles=new ArrayList<>();
-        getData(page);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                visibleItemCount = recyclerView.getChildCount();
-                totalItemCount = llm.getItemCount();
-                firstVisibleItem = llm.findFirstVisibleItemPosition();
+            llm = new LinearLayoutManager(getActivity());
+            llm.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(llm);
+            listArticles = new ArrayList<>();
+            getData(page);
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    visibleItemCount = recyclerView.getChildCount();
+                    totalItemCount = llm.getItemCount();
+                    firstVisibleItem = llm.findFirstVisibleItemPosition();
 
-                if (loading) {
-                    if (totalItemCount > previousTotal) {
-                        loading = false;
-                        previousTotal = totalItemCount;
+                    if (loading) {
+                        if (totalItemCount > previousTotal) {
+                            loading = false;
+                            previousTotal = totalItemCount;
+                        }
                     }
+                    if (!loading && (totalItemCount - visibleItemCount)
+                            <= (firstVisibleItem + visibleThreshold)) {
+                        // End has been reached
+
+                        // Do something
+
+                        page++;
+                        getData(page);
+                        loading = true;
+
+                    }
+
                 }
-                if (!loading && (totalItemCount - visibleItemCount)
-                        <= (firstVisibleItem + visibleThreshold)) {
-                    // End has been reached
+            });
 
-                    // Do something
-                    page++;
-
-                    getData(page);
-
-                    loading = true;
-                }
-
-            }
-        });
         adapter=new CardAdapter(listArticles,getContext());
         recyclerView.setAdapter(adapter);
 
@@ -91,6 +96,10 @@ public class home extends Fragment{
     private void getData(int page){
         //Showing a progress dialog
        // final ProgressDialog loading = ProgressDialog.show(getActivity(),"Loading Data", "Please wait...",false,false);
+
+       // listArticles.add(null);
+      //  adapter.notifyDataSetChanged();
+        System.out.println("The articles size is "+listArticles.size());
         String url="https://tamilglitz.in/api/get_recent_posts/?count=5&page=";
         //Creating a json array request
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(url+String.valueOf(page),null,
@@ -99,7 +108,9 @@ public class home extends Fragment{
                     public void onResponse(JSONObject response) {
                         //Dismissing progress dialog
                       //  loading.dismiss();
-
+                        listArticles.remove(listArticles.size()-1);
+                        adapter.notifyItemRemoved(listArticles.size()-1);
+                      //  adapter.notifyDataSetChanged();
                         try {
                             JSONArray post = response.getJSONArray("posts");
                             for (int i = 0; i < post.length(); i++) {
@@ -113,9 +124,11 @@ public class home extends Fragment{
                                 //  topic.setTitle("Title "+i);
                                 listArticles.add(topic);
                             }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        listArticles.remove(null);
                         adapter.notifyDataSetChanged();
                     }
                 },

@@ -9,6 +9,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
@@ -21,11 +22,11 @@ import java.util.List;
  * No pagination
  */
 
-    public class CardAdapter extends RecyclerView.Adapter<CardAdapter.ViewHolder> {
+public class CardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private ImageLoader imageLoader;
     private Context context;
-
+    int ITEM_VIEW_TYPE_BASIC=0,ITEM_VIEW_TYPE_FOOTER=1;
     //List of superHeroes
     List<Article> articles;
 
@@ -36,39 +37,48 @@ import java.util.List;
         this.context = context;
     }
 
+    public int getItemViewType(int position){
+        if(articles.get(position)==null) return ITEM_VIEW_TYPE_FOOTER;
+        else return  ITEM_VIEW_TYPE_BASIC;
+    }
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if(viewType==ITEM_VIEW_TYPE_BASIC) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_card_view, parent, false);
+            return new ArticleViewHolder(v);
 
+        }
+        else{
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.progressbar_item, parent, false);
+            return new ProgressViewHolder(v);
 
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_card_view, parent, false);
-        return new ViewHolder(v);
-
+        }
 
     }
 
 
-
     @Override
-    public int getItemViewType(int position) {
-        return articles.get(position) == null ? 1 : 0;
-    }
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if(holder instanceof ArticleViewHolder) {
+            Article article = articles.get(position);
+            ArticleViewHolder aHolder= (ArticleViewHolder) holder;
+            imageLoader = CustomVolleyRequest.getInstance(context).getImageLoader();
+            imageLoader.get(article.getThumbUrl(), ImageLoader.getImageListener(aHolder.thumbView, R.mipmap.ic_launcher, android.R.drawable.ic_dialog_alert));
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+            aHolder.thumbView.setImageUrl(article.getThumbUrl(), imageLoader);
+            aHolder.textViewTitle.setText(Html.fromHtml(article.getTitle()));
 
-        Article article = articles.get(position);
+            aHolder.textViewDate.setText(article.getDate());
+            aHolder.thumbView.setTag(aHolder);
+            aHolder.currentArticle = article;
+        }
+        else if(holder instanceof ProgressViewHolder){
+            ProgressViewHolder pHolder = (ProgressViewHolder) holder;
+            pHolder.progressBar.setIndeterminate(true);
 
-        imageLoader = CustomVolleyRequest.getInstance(context).getImageLoader();
-        imageLoader.get(article.getThumbUrl(), ImageLoader.getImageListener(holder.thumbView, R.mipmap.ic_launcher, android.R.drawable.ic_dialog_alert));
-
-        holder.thumbView.setImageUrl(article.getThumbUrl(), imageLoader);
-        holder.textViewTitle.setText(Html.fromHtml(article.getTitle()));
-
-        holder.textViewDate.setText(article.getDate());
-        holder.thumbView.setTag(holder);
-        holder.currentArticle = article;
-
+        }
 
     }
 
@@ -78,14 +88,14 @@ import java.util.List;
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ArticleViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public NetworkImageView thumbView;
         public TextView textViewTitle;
         public TextView textViewDate;
         public CardView cardView;
         public Article currentArticle;
 
-        public ViewHolder(View itemView) {
+        public ArticleViewHolder(View itemView) {
             super(itemView);
             thumbView = (NetworkImageView) itemView.findViewById(R.id.thumbnail);
             textViewTitle = (TextView) itemView.findViewById(R.id.textTitle);
@@ -104,6 +114,17 @@ import java.util.List;
             //((Activity) context).startActivity(intent);
             context.startActivity(intent);
         }
+    }
+    public class ProgressViewHolder extends RecyclerView.ViewHolder{
+        private ProgressBar progressBar;
+        public ProgressBar getProgressBar() {
+            return progressBar;
+        }
+        public ProgressViewHolder(View itemView) {
+            super(itemView);
+            progressBar= (ProgressBar) itemView.findViewById(R.id.progressBar);
+        }
+
     }
 }
 
